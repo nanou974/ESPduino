@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Fond dégradé sombre tech -->
+    <radialGradient id="bg" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#1a2340"/>
+      <stop offset="100%" stop-color="#0a0f1e"/>
+    </radialGradient>
+    <!-- Halo cyan sur la puce -->
+    <radialGradient id="chipglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Dégradé puce centrale -->
+    <linearGradient id="chipgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#0d2137"/>
+    </linearGradient>
+    <!-- Dégradé éclair -->
+    <linearGradient id="boltgrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="100%" stop-color="#ff9800"/>
+    </linearGradient>
+    <!-- Dégradé circuit board -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fond arrondi -->
+  <rect width="512" height="512" rx="96" ry="96" fill="url(#bg)"/>
+
+  <!-- Halo de fond derrière la puce -->
+  <circle cx="256" cy="248" r="160" fill="url(#chipglow)"/>
+
+  <!-- ===== TRACES PCB DÉCORATIVES ===== -->
+  <!-- Traces horizontales gauche -->
+  <g stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" opacity="0.25">
+    <line x1="44" y1="210" x2="128" y2="210"/>
+    <circle cx="44" cy="210" r="5" fill="none" stroke-width="2"/>
+    <line x1="44" y1="248" x2="128" y2="248"/>
+    <circle cx="44" cy="248" r="5" fill="none" stroke-width="2"/>
+    <line x1="44" y1="286" x2="128" y2="286"/>
+    <circle cx="44" cy="286" r="5" fill="none" stroke-width="2"/>
+    <!-- Trace avec coude -->
+    <polyline points="44,170 90,170 90,210" fill="none"/>
+    <polyline points="44,324 90,324 90,286" fill="none"/>
+  </g>
+  <!-- Traces horizontales droite -->
+  <g stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" opacity="0.25">
+    <line x1="384" y1="210" x2="468" y2="210"/>
+    <circle cx="468" cy="210" r="5" fill="none" stroke-width="2"/>
+    <line x1="384" y1="248" x2="468" y2="248"/>
+    <circle cx="468" cy="248" r="5" fill="none" stroke-width="2"/>
+    <line x1="384" y1="286" x2="468" y2="286"/>
+    <circle cx="468" cy="286" r="5" fill="none" stroke-width="2"/>
+    <polyline points="468,170 422,170 422,210" fill="none"/>
+    <polyline points="468,324 422,324 422,286" fill="none"/>
+  </g>
+  <!-- Traces verticales haut -->
+  <g stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" opacity="0.25">
+    <line x1="210" y1="60" x2="210" y2="128"/>
+    <circle cx="210" cy="60" r="5" fill="none" stroke-width="2"/>
+    <line x1="248" y1="60" x2="248" y2="128"/>
+    <circle cx="248" cy="60" r="5" fill="none" stroke-width="2"/>
+    <line x1="286" y1="60" x2="286" y2="128"/>
+    <circle cx="286" cy="60" r="5" fill="none" stroke-width="2"/>
+  </g>
+  <!-- Traces verticales bas -->
+  <g stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" opacity="0.25">
+    <line x1="210" y1="368" x2="210" y2="436"/>
+    <circle cx="210" cy="436" r="5" fill="none" stroke-width="2"/>
+    <line x1="248" y1="368" x2="248" y2="436"/>
+    <circle cx="248" cy="436" r="5" fill="none" stroke-width="2"/>
+    <line x1="286" y1="368" x2="286" y2="436"/>
+    <circle cx="286" cy="436" r="5" fill="none" stroke-width="2"/>
+  </g>
+
+  <!-- ===== PUCE CENTRALE ===== -->
+  <!-- Ombre -->
+  <rect x="122" y="126" width="272" height="248" rx="18" fill="#000" opacity="0.4"/>
+  <!-- Corps puce -->
+  <rect x="118" y="122" width="272" height="248" rx="18" fill="url(#chipgrad)" stroke="#1e5c8a" stroke-width="2.5"/>
+  <!-- Grille intérieure (look die) -->
+  <rect x="132" y="136" width="244" height="220" rx="8" fill="#0d1a2e" stroke="#1a3a58" stroke-width="1"/>
+
+  <!-- Rangées de pins gauche (8 pins) -->
+  <g fill="#2a6a9a" stroke="#00e5ff" stroke-width="1" opacity="0.9">
+    <rect x="104" y="150" width="14" height="8" rx="2"/>
+    <rect x="104" y="170" width="14" height="8" rx="2"/>
+    <rect x="104" y="190" width="14" height="8" rx="2"/>
+    <rect x="104" y="210" width="14" height="8" rx="2"/>
+    <rect x="104" y="270" width="14" height="8" rx="2"/>
+    <rect x="104" y="290" width="14" height="8" rx="2"/>
+    <rect x="104" y="310" width="14" height="8" rx="2"/>
+    <rect x="104" y="330" width="14" height="8" rx="2"/>
+  </g>
+  <!-- Pins droite -->
+  <g fill="#2a6a9a" stroke="#00e5ff" stroke-width="1" opacity="0.9">
+    <rect x="390" y="150" width="14" height="8" rx="2"/>
+    <rect x="390" y="170" width="14" height="8" rx="2"/>
+    <rect x="390" y="190" width="14" height="8" rx="2"/>
+    <rect x="390" y="210" width="14" height="8" rx="2"/>
+    <rect x="390" y="270" width="14" height="8" rx="2"/>
+    <rect x="390" y="290" width="14" height="8" rx="2"/>
+    <rect x="390" y="310" width="14" height="8" rx="2"/>
+    <rect x="390" y="330" width="14" height="8" rx="2"/>
+  </g>
+  <!-- Pins haut -->
+  <g fill="#2a6a9a" stroke="#00e5ff" stroke-width="1" opacity="0.9">
+    <rect x="160" y="108" width="8" height="14" rx="2"/>
+    <rect x="186" y="108" width="8" height="14" rx="2"/>
+    <rect x="212" y="108" width="8" height="14" rx="2"/>
+    <rect x="290" y="108" width="8" height="14" rx="2"/>
+    <rect x="316" y="108" width="8" height="14" rx="2"/>
+    <rect x="342" y="108" width="8" height="14" rx="2"/>
+  </g>
+  <!-- Pins bas -->
+  <g fill="#2a6a9a" stroke="#00e5ff" stroke-width="1" opacity="0.9">
+    <rect x="160" y="374" width="8" height="14" rx="2"/>
+    <rect x="186" y="374" width="8" height="14" rx="2"/>
+    <rect x="212" y="374" width="8" height="14" rx="2"/>
+    <rect x="290" y="374" width="8" height="14" rx="2"/>
+    <rect x="316" y="374" width="8" height="14" rx="2"/>
+    <rect x="342" y="374" width="8" height="14" rx="2"/>
+  </g>
+
+  <!-- ===== ÉCLAIR CENTRAL (code + énergie) ===== -->
+  <polygon
+    points="278,148 234,258 262,258 240,360 304,232 272,232"
+    fill="url(#boltgrad)"
+    filter="url(#softglow)"
+    opacity="0.97"
+  />
+  <!-- Contour éclair léger -->
+  <polygon
+    points="278,148 234,258 262,258 240,360 304,232 272,232"
+    fill="none"
+    stroke="#ffe066"
+    stroke-width="1.5"
+    opacity="0.6"
+  />
+
+  <!-- ===== POINT INDICATEUR (coin puce) ===== -->
+  <circle cx="140" cy="140" r="7" fill="#00e5ff" opacity="0.7" filter="url(#glow)"/>
+
+  <!-- ===== TEXTE ===== -->
+  <!-- ESPduino -->
+  <text
+    x="256" y="456"
+    text-anchor="middle"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-weight="900"
+    font-size="46"
+    letter-spacing="2"
+    fill="#00e5ff"
+    filter="url(#glow)"
+  >ESPduino</text>
+  <!-- Sous-titre -->
+  <text
+    x="256" y="488"
+    text-anchor="middle"
+    font-family="Arial, sans-serif"
+    font-weight="400"
+    font-size="18"
+    letter-spacing="3"
+    fill="#7ab8d4"
+    opacity="0.85"
+  >CODE &amp; ÉLECTRONIQUE</text>
+</svg>
