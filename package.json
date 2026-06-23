@@ -1,0 +1,12 @@
+{
+  "name": "espaduino",
+  "version": "1.0.0",
+  "description": "ESP32 Academy - AI Assistant",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "dev": "vercel dev"
+  },
+  "keywords": ["esp32", "arduino", "ai"],
+  "author": "",
+  "license": "MIT"
+}
