@@ -1,0 +1,246 @@
+#groq-widget-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  z-index: 9999;
+}
+
+.groq-bubble {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  border: none;
+  color: white;
+  font-size: 28px;
+  position: relative;
+}
+
+.groq-bubble:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+}
+
+.groq-bubble.active {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.groq-chat-window {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  width: 380px;
+  height: 500px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+.groq-chat-window.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.groq-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.groq-header-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.groq-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.groq-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.groq-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8f9fa;
+}
+
+.groq-message {
+  display: flex;
+  margin-bottom: 4px;
+  animation: messageAppear 0.3s ease;
+}
+
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.groq-message.user-message {
+  justify-content: flex-end;
+}
+
+.groq-message.bot-message {
+  justify-content: flex-start;
+}
+
+.groq-message.error-message {
+  justify-content: flex-start;
+}
+
+.groq-message-content {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.groq-message.user-message .groq-message-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.groq-message.bot-message .groq-message-content {
+  background: #e9ecef;
+  color: #212529;
+  border-bottom-left-radius: 4px;
+}
+
+.groq-message.error-message .groq-message-content {
+  background: #f8d7da;
+  color: #721c24;
+  border-bottom-left-radius: 4px;
+}
+
+.groq-input-container {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #e9ecef;
+  flex-shrink: 0;
+}
+
+.groq-input {
+  flex: 1;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.groq-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.groq-send-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.groq-send-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.groq-send-btn:active {
+  transform: translateY(0);
+}
+
+.groq-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.groq-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.groq-messages::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.groq-messages::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+@media (max-width: 480px) {
+  .groq-chat-window {
+    width: calc(100vw - 20px);
+    height: 60vh;
+    bottom: 70px;
+    right: 10px;
+  }
+
+  .groq-message-content {
+    max-width: 90%;
+  }
+}
