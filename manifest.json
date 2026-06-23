@@ -2,21 +2,21 @@
   "name": "ESPduino Academy",
   "short_name": "ESPduino",
   "description": "Ton mentor ESP32 & Arduino",
-  "start_url": "/ESPduino/",
-  "scope": "/ESPduino/",
+  "start_url": "https://nanou974.github.io/ESPduino/",
+  "scope": "https://nanou974.github.io/ESPduino/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#020617",
   "theme_color": "#020617",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://nanou974.github.io/ESPduino/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://nanou974.github.io/ESPduino/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
