@@ -1,6 +1,6 @@
 class GroqAssistant {
   constructor(config = {}) {
-    this.vercelUrl = config.vercelUrl || 'https://espaduino.vercel.app';
+    this.vercelUrl = config.vercelUrl || 'https://espduino-2paa204n9-bg-3d81.vercel.app';
     this.isOpen = false;
     this.messages = [];
     this.isLoading = false;
@@ -159,6 +159,6 @@ class GroqAssistant {
 
 document.addEventListener('DOMContentLoaded', () => {
   window.groqAssistant = new GroqAssistant({
-    vercelUrl: 'https://espaduino.vercel.app'
+    vercelUrl: 'https://espduino-2paa204n9-bg-3d81.vercel.app'
   });
 });
