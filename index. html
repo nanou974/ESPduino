@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Academy - Ton Mentor Code & Électronique</title>
+    <!-- Tailwind CSS pour un design moderne et sombre -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white animate-pulse">
+                <i class="fa-solid fa-microchip text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">ESP32 & Arduino Academy</h1>
+                <p class="text-xs text-slate-400">Ton espace d'apprentissage sans routine ni oubli</p>
+            </div>
+        </div>
+        <div class="flex space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+            <button onclick="switchTab('curriculum')" id="tab-curriculum" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all bg-indigo-600 text-white"><i class="fa-solid fa-book-open mr-2"></i>Cours (30J)</button>
+            <button onclick="switchTab('simulator')" id="tab-simulator" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white"><i class="fa-solid fa-laptop-code mr-2"></i>Simulateur</button>
+            <button onclick="switchTab('anki')" id="tab-anki" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white"><i class="fa-solid fa-brain mr-2"></i>Mémoire (Anki)</button>
+            <button onclick="switchTab('reminders')" id="tab-reminders" class="tab-btn px-4 py-2 rounded-md text-sm font-medium transition-all text-slate-400 hover:text-white"><i class="fa-solid fa-bell mr-2"></i>Rappels</button>
+        </div>
+    </nav>
+
+    <!-- Contenu Principal -->
+    <main class="flex-grow p-6 max-w-7xl mx-auto w-full">
+        
+        <!-- SECTION CURRICULUM -->
+        <section id="sec-curriculum" class="tab-content space-y-6">
+            <div class="glass p-6 rounded-2xl">
+                <h2 class="text-2xl font-bold mb-2 text-indigo-400"><i class="fa-solid fa-graduation-cap mr-2"></i>Ton Programme Progressif de 30 Jours</h2>
+                <p class="text-slate-400 text-sm">Chaque étape te propose un code prêt à tester immédiatement dans le simulateur. Ne cherche pas à tout mémoriser d'un coup, clique sur le bouton pour l'envoyer directement dans le simulateur !</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Jour 1 -->
+                <div class="glass p-6 rounded-2xl flex flex-col justify-between border-l-4 border-emerald-500">
+                    <div>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-full">JOUR 1 : Les Variables</span>
+                        <h3 class="text-lg font-bold mt-2">Stocker de l'information</h3>
+                        <p class="text-slate-400 text-sm mt-2">Apprends à ranger tes données (comme la température ou l'état d'un bouton) dans des boîtes virtuelles appelées "variables".</p>
+                    </div>
+                    <button onclick="loadLessonCode(1)" class="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-play mr-2"></i> Charger & Tester ce code
+                    </button>
+                </div>
+
+                <!-- Jour 2 -->
+                <div class="glass p-6 rounded-2xl flex flex-col justify-between border-l-4 border-indigo-500">
+                    <div>
+                        <span class="bg-indigo-500/10 text-indigo-400 text-xs font-bold px-2.5 py-1 rounded-full">JOUR 2 : Faire Clignoter</span>
+                        <h3 class="text-lg font-bold mt-2">Interagir avec le monde réel</h3>
+                        <p class="text-slate-400 text-sm mt-2">Découvre comment ordonner à la broche (PIN) de l'ESP32 d'envoyer du courant pour allumer ou éteindre une LED.</p>
+                    </div>
+                    <button onclick="loadLessonCode(2)" class="mt-4 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-play mr-2"></i> Charger & Tester ce code
+                    </button>
+                </div>
+
+                <!-- Jour 3 -->
+                <div class="glass p-6 rounded-2xl flex flex-col justify-between border-l-4 border-amber-500">
+                    <div>
+                        <span class="bg-amber-500/10 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">JOUR 3 : Le Potentiomètre</span>
+                        <h3 class="text-lg font-bold mt-2">Lire une valeur variable</h3>
+                        <p class="text-slate-400 text-sm mt-2">Apprends à lire un capteur analogique (comme un bouton de volume) pour faire réagir le système dynamiquement.</p>
+                    </div>
+                    <button onclick="loadLessonCode(3)" class="mt-4 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold py-2 px-4 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-play mr-2"></i> Charger & Tester ce code
+                    </button>
+                </div>
+
+                <!-- Jour 17 -->
+                <div class="glass p-6 rounded-2xl flex flex-col justify-between border-l-4 border-cyan-500 col-span-1 md:col-span-3">
+                    <div class="flex justify-between items-start flex-wrap gap-2">
+                        <div>
+                            <span class="bg-cyan-500/10 text-cyan-400 text-xs font-bold px-2.5 py-1 rounded-full">JOUR 17 : Station Météo Connectée (OLED + DHT22)</span>
+                            <h3 class="text-xl font-bold mt-2">Ton Premier Grand Projet !</h3>
+                            <p class="text-slate-400 text-sm mt-2">Nous lisons ici un capteur de température DHT22 et affichons en direct les données sur un écran LCD connecté en I2C.</p>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded border border-slate-800 text-xs text-cyan-400">
+                            <i class="fa-solid fa-microchip mr-1"></i> ESP32 + DHT22 + LCD I2C
+                        </div>
+                    </div>
+                    <button onclick="loadLessonCode(17)" class="mt-4 w-full bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold py-3 px-4 rounded-lg transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-rocket mr-2"></i> Charger & Simuler le projet Station Météo Complet
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION SIMULATEUR -->
+        <section id="sec-simulator" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Zone Code (Gauche) -->
+            <div class="lg:col-span-7 flex flex-col space-y-4">
+                <div class="glass p-4 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-xs text-slate-400 font-mono ml-2">sketch.ino</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="runCode()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs transition-all flex items-center">
+                            <i class="fa-solid fa-play mr-1.5"></i> Lancer la Simulation
+                        </button>
+                        <button onclick="stopCode()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs transition-all flex items-center">
+                            <i class="fa-solid fa-stop mr-1.5"></i> Arrêter
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative flex-grow">
+                    <textarea id="code-editor" class="w-full h-96 bg-slate-900 text-emerald-400 font-mono p-4 rounded-2xl border border-slate-800 focus:outline-none focus:border-indigo-500 resize-none text-sm" spellcheck="false">// Code Arduino / ESP32
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Prêt ! Charge un cours ou clique sur Lancer.");
+}</textarea>
+                </div>
+
+                <!-- Moniteur Série -->
+                <div class="glass rounded-2xl p-4 flex flex-col h-48">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+                        <span class="text-xs font-bold text-slate-400 font-mono"><i class="fa-solid fa-terminal mr-2"></i>MONITEUR SÉRIE (9600 baud)</span>
+                        <button onclick="clearSerial()" class="text-xs text-slate-500 hover:text-slate-300"><i class="fa-solid fa-trash-can"></i> Effacer</button>
+                    </div>
+                    <div id="serial-output" class="flex-grow overflow-y-auto font-mono text-xs text-emerald-300 space-y-1 bg-slate-950 p-2 rounded-lg border border-slate-900">
+                        [Console vide. Lance le code pour voir les messages]
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone Matériel Virtuel (Droite) -->
+            <div class="lg:col-span-5 flex flex-col space-y-6">
+                <!-- Vue de la Carte ESP32 virtuelle -->
+                <div class="glass p-6 rounded-2xl relative overflow-hidden flex flex-col items-center justify-center min-h-[300px] border border-slate-800">
+                    <div class="absolute top-2 left-4 text-xs font-bold text-slate-500">LABORATOIRE PHYSIQUE VIRTUEL</div>
+                    
+                    <!-- ESP32 Board Graphic -->
+                    <div class="w-48 bg-slate-900 border-2 border-slate-700 rounded-xl p-4 flex flex-col items-center space-y-3 relative shadow-2xl">
+                        <!-- Chip -->
+                        <div class="bg-zinc-800 w-16 h-12 rounded border border-zinc-700 flex flex-col items-center justify-center text-[10px] text-zinc-400 font-bold p-1">
+                            <span>ESP32-WROOM</span>
+                            <div class="w-4 h-4 bg-zinc-600 rounded-sm mt-1"></div>
+                        </div>
+                        <!-- LED Interne -->
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[10px] text-slate-400">PIN 13 LED</span>
+                            <div id="virtual-led" class="w-6 h-6 rounded-full bg-slate-800 border-2 border-slate-600 transition-all duration-150"></div>
+                        </div>
+                        <!-- Bornier Pinout Simplifié -->
+                        <div class="w-full flex justify-between text-[8px] font-mono text-indigo-400 border-t border-slate-800 pt-2">
+                            <span>GND</span>
+                            <span>A0</span>
+                            <span>D13</span>
+                            <span>3V3</span>
+                        </div>
+                    </div>
+
+                    <!-- Périphériques virtuels connectés -->
+                    <div class="w-full mt-6 grid grid-cols-2 gap-4">
+                        <!-- Potentiomètre (Entrée analogique A0) -->
+                        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex flex-col space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-400">Potentiomètre (A0)</span>
+                                <span id="pot-val-display" class="text-xs font-mono text-cyan-400">0</span>
+                            </div>
+                            <input type="range" id="pot-slider" min="0" max="1023" value="0" class="w-full accent-cyan-500" oninput="updatePotentiometer(this.value)">
+                        </div>
+
+                        <!-- Capteur de Température/Humidité (DHT22) -->
+                        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex flex-col space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-400">Capteur DHT22</span>
+                                <span id="temp-val-display" class="text-xs font-mono text-emerald-400">22°C / 40%</span>
+                            </div>
+                            <div class="space-y-1">
+                                <input type="range" id="temp-slider" min="-10" max="50" value="22" class="w-full accent-emerald-500" oninput="updateDHT()">
+                                <input type="range" id="hum-slider" min="0" max="100" value="40" class="w-full accent-blue-500" oninput="updateDHT()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Écran LCD virtuel (Sortie I2C) -->
+                <div class="glass p-4 rounded-2xl flex flex-col space-y-2 border border-slate-800">
+                    <span class="text-xs font-bold text-slate-400"><i class="fa-solid fa-tv mr-2"></i>ÉCRAN LCD VIRTUEL (I2C)</span>
+                    <div class="bg-cyan-950 border-2 border-cyan-800 rounded-lg p-3 font-mono text-sm text-cyan-300 shadow-inner h-16 flex flex-col justify-between">
+                        <div id="lcd-line-1" class="tracking-widest">ESP32 Pret...</div>
+                        <div id="lcd-line-2" class="tracking-widest">Lancez le code</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION ANKI (FLASHCARDS) -->
+        <section id="sec-anki" class="tab-content hidden max-w-xl mx-auto space-y-6">
+            <div class="glass p-6 rounded-2xl text-center">
+                <h2 class="text-2xl font-bold text-indigo-400 mb-1"><i class="fa-solid fa-brain mr-2"></i>Répétition Espacée (Style Anki)</h2>
+                <p class="text-sm text-slate-400">Pour retenir le code sans effort, révise régulièrement ces petites cartes. Pas besoin de par cœur, juste de la régularité.</p>
+                <div class="mt-4 bg-slate-900/60 rounded-full h-2 w-full overflow-hidden border border-slate-800">
+                    <div id="anki-progress" class="bg-indigo-500 h-full transition-all" style="width: 10%"></div>
+                </div>
+                <div class="text-xs text-slate-500 mt-2" id="anki-tracker">Carte 1 / 5</div>
+            </div>
+
+            <!-- Carte physique -->
+            <div class="perspective-1000 min-h-[250px] relative cursor-pointer" onclick="flipCard()">
+                <div id="flashcard" class="glass w-full h-full p-8 rounded-2xl flex flex-col justify-between items-center text-center border border-slate-800 transition-all duration-500 min-h-[250px]">
+                    <div class="text-xs text-slate-500 font-bold uppercase tracking-wider" id="card-category">Arduino C++</div>
+                    <div class="text-xl font-medium my-auto px-4" id="card-text">Que fait la fonction setup() ?</div>
+                    <div class="text-xs text-indigo-400 mt-4"><i class="fa-solid fa-arrows-rotate mr-2"></i>Clique pour retourner la carte</div>
+                </div>
+            </div>
+
+            <!-- Boutons d'évaluation (Masqués par défaut) -->
+            <div id="anki-controls" class="hidden grid grid-cols-3 gap-3">
+                <button onclick="gradeCard('hard')" class="bg-rose-950/40 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold py-3 rounded-xl transition-all text-sm flex flex-col items-center justify-center">
+                    <span>Rouge (Difficile)</span>
+                    <span class="text-[10px] font-normal text-rose-400">À revoir de suite</span>
+                </button>
+                <button onclick="gradeCard('medium')" class="bg-amber-950/40 hover:bg-amber-900 border border-amber-800 text-amber-300 font-bold py-3 rounded-xl transition-all text-sm flex flex-col items-center justify-center">
+                    <span>Orange (Moyen)</span>
+                    <span class="text-[10px] font-normal text-amber-400">À revoir demain</span>
+                </button>
+                <button onclick="gradeCard('easy')" class="bg-emerald-950/40 hover:bg-emerald-900 border border-emerald-800 text-emerald-300 font-bold py-3 rounded-xl transition-all text-sm flex flex-col items-center justify-center">
+                    <span>Vert (Facile)</span>
+                    <span class="text-[10px] font-normal text-emerald-400">À revoir dans 3j</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION RAPPELS -->
+        <section id="sec-reminders" class="tab-content hidden max-w-xl mx-auto space-y-6">
+            <div class="glass p-6 rounded-2xl">
+                <h2 class="text-2xl font-bold text-indigo-400 mb-2"><i class="fa-solid fa-clock mr-2"></i>Planificateur d'Habitudes</h2>
+                <p class="text-sm text-slate-400">Pour garder la mémoire fraîche, la clé est la constance. Configure ici ton déclencheur d'apprentissage.</p>
+                
+                <div class="mt-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Ton déclencheur quotidien (ex: "En buvant mon café du matin")</label>
+                        <input type="text" id="reminder-trigger" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500" value="En buvant mon café du matin">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Heure du rappel</label>
+                            <input type="time" id="reminder-time" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500" value="08:00">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="saveReminder()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all">
+                                <i class="fa-solid fa-save mr-2"></i>Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification simulée pour tester -->
+            <div class="glass p-6 rounded-2xl border border-dashed border-slate-800 text-center">
+                <h3 class="text-sm font-semibold text-slate-300 mb-2">Tes
