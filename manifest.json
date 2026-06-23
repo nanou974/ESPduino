@@ -5,7 +5,7 @@
   "start_url": "https://nanou974.github.io/ESPduino/",
   "scope": "https://nanou974.github.io/ESPduino/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#020617",
   "theme_color": "#020617",
   "icons": [
