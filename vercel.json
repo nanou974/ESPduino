@@ -1,9 +1,7 @@
 {
-  "buildCommand": "echo 'Static site'",
+  "buildCommand": "mkdir -p public && cp index.html groq-widget.js groq-widget.css public/ 2>/dev/null || true",
   "outputDirectory": "public",
-  "env": {
-    "GROQ_API_KEY": "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"
-  },
+  "framework": "static",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
