@@ -1,5 +1,5 @@
 {
   "buildCommand": "echo 'Static site'",
   "outputDirectory": ".",
-  "framework": "static"
+  "framework": "vite"
 }
