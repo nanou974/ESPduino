@@ -1,11 +1,5 @@
 {
-  "buildCommand": "mkdir -p public && cp index.html groq-widget.js groq-widget.css public/ 2>/dev/null || true",
+  "buildCommand": "echo 'Static site - no build needed'",
   "outputDirectory": "public",
-  "framework": "static",
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  }
+  "framework": "static"
 }
