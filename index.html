@@ -1,1545 +1,1123 @@
-<!-- À ajouter dans index.html après la section ANKI -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESPduino - Projets Électroniques & IoT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="groq-widget.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<!-- SECTION COURS QUOTIDIENS -->
-<section id="sec-courses" class="tab-content hidden max-w-4xl mx-auto space-y-6">
-    <div class="glass p-6 rounded-2xl">
-        <h2 class="text-2xl font-bold text-indigo-400 mb-4"><i class="fa-solid fa-graduation-cap mr-2"></i>Cours du Jour</h2>
-        
-        <!-- Sélecteur de jour -->
-        <div class="mb-6 flex gap-2 flex-wrap">
-            <select id="day-selector" class="glass px-4 py-2 rounded-lg text-white border border-indigo-500 focus:outline-none focus:border-cyan-400">
-                <option value="">Choisir un jour...</option>
-            </select>
-            <button onclick="loadTodayLesson()" class="glass px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 transition">
-                📅 Aujourd'hui
-            </button>
-        </div>
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #ff006e;
+            --accent: #8338ec;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(20, 20, 30, 0.8);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+        }
 
-        <!-- Contenu du cours -->
-        <div id="course-content" class="glass p-6 rounded-xl space-y-4">
-            <h3 id="course-title" class="text-xl font-bold text-cyan-400"></h3>
-            <div id="course-theory" class="space-y-3 text-slate-300"></div>
-            
-            <!-- Exemple de code -->
-            <div id="course-example" class="glass p-4 rounded-lg bg-slate-900 mt-4">
-                <p class="text-sm text-indigo-300 mb-2">📝 Exemple :</p>
-                <pre id="course-code" class="text-xs text-green-400 overflow-x-auto"></pre>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animated Background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+        }
+
+        .bg-animated::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 110, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(131, 56, 236, 0.05) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Glass Morphism */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-link {
+            position: relative;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 6rem 2rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 80px rgba(0, 212, 255, 0.5);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 40px rgba(131, 56, 236, 0.8)); }
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--dark-bg);
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--dark-bg);
+            transform: translateY(-3px);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Section Styling */
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--text-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 4rem;
+        }
+
+        /* Project Grid */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .project-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 16/10;
+        }
+
+        .project-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .project-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .project-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(transparent, rgba(10, 10, 15, 0.95));
+        }
+
+        /* Tutorial Cards */
+        .tutorial-card {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tutorial-card:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+        }
+
+        .tutorial-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Shop Items */
+        .shop-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .shop-item .price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        /* Contact Form */
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(10, 10, 15, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4rem 2rem 2rem;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            color: var(--dark-bg);
+            transform: translateY(-5px);
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: float 15s infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.98);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            font-size: 2rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-menu a:hover {
+            color: var(--primary);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 30px;
+            height: 3px;
+            background: var(--text-primary);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                display: none !important;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Stats Counter */
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Tech Stack Icons */
+        .tech-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .tech-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+            border-color: var(--primary);
+        }
+
+        /* Groq Widget Integration */
+        #groq-widget-container {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            z-index: 999;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+        }
+
+        @media (max-width: 768px) {
+            #groq-widget-container {
+                bottom: 80px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animated"></div>
+
+    <!-- Floating Particles -->
+    <div id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="#home" class="font-orbitron text-2xl font-bold">
+                <span class="text-cyan-400">ESP</span><span class="text-pink-500">duino</span>
+            </a>
+
+            <div class="nav-links hidden md:flex items-center gap-8">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#tutoriels" class="nav-link">Tutoriels</a>
+                <a href="#projets" class="nav-link">Projets</a>
+                <a href="#shop" class="nav-link">Shop</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+
+            <div class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
+    </nav>
 
-        <!-- Bouton test -->
-        <button onclick="goToTest()" class="w-full mt-6 glass px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 transition font-bold">
-            ✅ Tester ma compréhension
-        </button>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#home" onclick="toggleMobileMenu()">Home</a>
+        <a href="#tutoriels" onclick="toggleMobileMenu()">Tutoriels</a>
+        <a href="#projets" onclick="toggleMobileMenu()">Projets</a>
+        <a href="#shop" onclick="toggleMobileMenu()">Shop</a>
+        <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
     </div>
-</section>
 
-<!-- SECTION TESTS -->
-<section id="sec-tests" class="tab-content hidden max-w-4xl mx-auto space-y-6">
-    <div class="glass p-6 rounded-2xl">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fa-solid fa-flask mr-2"></i>Test du Jour</h2>
-        
-        <div id="test-content" class="space-y-6">
-            <!-- Les questions s'affichent ici dynamiquement -->
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-cyan-400 font-orbitron text-lg mb-4 tracking-widest uppercase">Bienvenue sur ESPduino</p>
+            <h1 class="hero-title mb-6">Projets Électroniques & IoT</h1>
+            <p class="hero-subtitle mb-10">
+                Découvrez nos projets DIY, tutoriels et guides pour maîtriser l'électronique, 
+                les microcontrôleurs ESP32 et Arduino. Rejoignez notre communauté Maker !
+            </p>
+            <div class="hero-buttons flex flex-wrap gap-4 justify-center">
+                <a href="#projets" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Voir les Projets
+                </a>
+                <a href="#tutoriels" class="btn-secondary">
+                    <i class="fas fa-book"></i>
+                    Apprendre
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto">
+                <div class="text-center">
+                    <div class="stat-number" data-target="50">0</div>
+                    <p class="text-gray-400 text-sm">Projets</p>
+                </div>
+                <div class="text-center">
+                    <div class="stat-number" data-target="1000">0</div>
+                    <p class="text-gray-400 text-sm">Membres</p>
+                </div>
+                <div class="text-center">
+                    <div class="stat-number" data-target="25">0</div>
+                    <p class="text-gray-400 text-sm">Tutoriels</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <!-- Boutons action -->
-        <div class="flex gap-4 mt-8">
-            <button onclick="submitTest()" class="flex-1 glass px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 transition font-bold">
-                ✅ Valider mes réponses
-            </button>
-            <button onclick="resetTest()" class="flex-1 glass px-6 py-3 rounded-lg bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 transition font-bold">
-                🔄 Recommencer
-            </button>
+    <!-- Tutoriels Section -->
+    <section id="tutoriels" class="section">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="section-title">Tutoriels</h2>
+            <p class="section-subtitle">Apprenez pas à pas avec nos guides détaillés</p>
+
+            <div class="space-y-4">
+                <div class="tutorial-card" onclick="window.location.href='#'">
+                    <div class="tutorial-number">01</div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Introduction à l'ESP32</h3>
+                        <p class="text-gray-400 text-sm">Découvrez les bases de l'ESP32, le microcontrôleur le plus puissant pour vos projets IoT.</p>
+                    </div>
+                </div>
+
+                <div class="tutorial-card" onclick="window.location.href='#'">
+                    <div class="tutorial-number">02</div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Communication WiFi avec ESP32</h3>
+                        <p class="text-gray-400 text-sm">Apprenez à connecter votre ESP32 au WiFi et à créer un serveur web.</p>
+                    </div>
+                </div>
+
+                <div class="tutorial-card" onclick="window.location.href='#'">
+                    <div class="tutorial-number">03</div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Capteurs et Actuateurs</h3>
+                        <p class="text-gray-400 text-sm">Interfacez vos capteurs (température, humidité, mouvement) avec l'ESP32.</p>
+                    </div>
+                </div>
+
+                <div class="tutorial-card" onclick="window.location.href='#'">
+                    <div class="tutorial-number">04</div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Stockage et Affichage</h3>
+                        <p class="text-gray-400 text-sm">Utilisez les cartes SD, les écrans OLED et LCD avec l'ESP32.</p>
+                    </div>
+                </div>
+
+                <div class="tutorial-card" onclick="window.location.href='#'">
+                    <div class="tutorial-number">05</div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Projets MQTT</h3>
+                        <p class="text-gray-400 text-sm">Créez des systèmes IoT professionnels avec le protocole MQTT.</p>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <!-- Résultats -->
-        <div id="test-results" class="hidden glass p-6 rounded-xl mt-6 space-y-4">
-            <h3 id="result-title" class="text-2xl font-bold"></h3>
-            <div id="result-details" class="space-y-3"></div>
-            <button onclick="backToCourse()" class="w-full glass px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition">
-                ← Retour au cours
-            </button>
+    <!-- Projets Section -->
+    <section id="projets" class="section">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="section-title">Nos Projets</h2>
+            <p class="section-subtitle">Explorez nos réalisations et obtenez le code source</p>
+
+            <div class="project-grid">
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-temperature-half text-6xl text-cyan-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Station Météo IoT</h3>
+                    <p class="text-gray-400 text-sm mb-4">Station météo connectée avec ESP32, capteur BME280 et affichage OLED. Données envoyées via MQTT.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">MQTT</span>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">C++</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-pink-500/20 to-orange-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-lightbulb text-6xl text-pink-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Maison Connectée</h3>
+                    <p class="text-gray-400 text-sm mb-4">Contrôlez vos lumières, volets et prises via une application mobile. Compatible Alexa et Google Home.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Alexa</span>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">Firebase</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-seedling text-6xl text-green-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Robot Arrosage Auto</h3>
+                    <p class="text-gray-400 text-sm mb-4">Système d'arrosage automatique avec capteur d'humidité sol et pompe WATER.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Sensors</span>
+                        <span class="px-3 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-full">Water</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-robot text-6xl text-purple-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Bras Robotique</h3>
+                    <p class="text-gray-400 text-sm mb-4">Bras robotique 4 axes contrôlé via Bluetooth ou WiFi. Programmation par mouvements.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">Bluetooth</span>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Servos</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-yellow-500/20 to-red-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-car-side text-6xl text-yellow-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Voiture Autonome</h3>
+                    <p class="text-gray-400 text-sm mb-4">Véhicule autonome avec détection d'obstacles par ultrason et suivi de ligne.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">AI</span>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">CV</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+
+                <div class="card project-card">
+                    <div class="h-48 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-fingerprint text-6xl text-blue-400"></i>
+                    </div>
+                    <h3 class="font-orbitron text-xl mb-2">Serrure Biométrique</h3>
+                    <p class="text-gray-400 text-sm mb-4">Système de verrouillage avec lecteur d'empreintes digitales et accès par code PIN.</p>
+                    <div class="flex gap-2 flex-wrap mb-4">
+                        <span class="px-3 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">ESP32</span>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">Biometrics</span>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Security</span>
+                    </div>
+                    <a href="#" class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                        <i class="fab fa-github"></i> Voir le code
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<script>
-// ===== DATABASE COMPLÈTE 30 JOURS =====
-const coursesDatabase = [
-    {
-        day: 1,
-        title: "🔌 Qu'est-ce qu'Arduino ?",
-        theory: [
-            "Arduino est une plateforme <strong>open-source</strong> pour créer des projets électroniques interactifs.",
-            "Elle combine une carte microcontrôleur (ATmega328) + un environnement de programmation simple.",
-            "C'est parfait pour débuter : pas besoin de diplôme, juste de curiosité !",
-            "<strong>Composants clés :</strong> LED, boutons, capteurs, moteurs, écrans..."
-        ],
-        example: `void setup() {
-  Serial.begin(9600); // Communiquer via USB
-}
+    <!-- Technologies Section -->
+    <section class="section bg-gradient-to-b from-transparent via-cyan-900/10 to-transparent">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="section-title">Nos Technologies</h2>
+            <p class="section-subtitle">Stack technique que nous utilisons</p>
 
-void loop() {
-  Serial.println("Bonjour Arduino!");
-  delay(1000); // Attendre 1 seconde
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La fonction <code>setup()</code> s'exécute ________ au démarrage de la carte.",
-                answer: "une seule fois",
-                options: ["une seule fois", "en continu", "jamais", "3 fois"]
-            },
-            {
-                type: "fill",
-                question: "La fonction <code>loop()</code> s'exécute ________ après setup().",
-                answer: "en boucle infinie",
-                options: ["en boucle infinie", "une seule fois", "selon un minuteur", "jamais"]
-            },
-            {
-                type: "fill",
-                question: "La vitesse de communication série standard est ________ baud.",
-                answer: "9600",
-                options: ["9600", "115200", "1200", "57600"]
+            <div class="flex flex-wrap justify-center gap-8">
+                <div class="tech-icon">
+                    <i class="fas fa-microchip text-cyan-400"></i>
+                </div>
+                <div class="tech-icon">
+                    <i class="fab fa-arduino text-green-400"></i>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-wifi text-blue-400"></i>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-code text-yellow-400"></i>
+                </div>
+                <div class="tech-icon">
+                    <i class="fab fa-python text-blue-400"></i>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-database text-purple-400"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section id="shop" class="section">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="section-title">Boutique</h2>
+            <p class="section-subtitle">Équipements et composants pour vos projets</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card shop-item">
+                    <div class="w-20 h-20 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-microchip text-3xl text-cyan-400"></i>
+                    </div>
+                    <h3 class="font-semibold">ESP32 DevKit</h3>
+                    <p class="text-gray-400 text-sm mb-2">Carte de développement ESP32</p>
+                    <p class="price">12,99 €</p>
+                    <button class="btn-primary text-sm py-2 px-4">
+                        <i class="fas fa-shopping-cart"></i> Acheter
+                    </button>
+                </div>
+
+                <div class="card shop-item">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-temperature-half text-3xl text-green-400"></i>
+                    </div>
+                    <h3 class="font-semibold">BME280</h3>
+                    <p class="text-gray-400 text-sm mb-2">Capteur température/humidité/pression</p>
+                    <p class="price">8,49 €</p>
+                    <button class="btn-primary text-sm py-2 px-4">
+                        <i class="fas fa-shopping-cart"></i> Acheter
+                    </button>
+                </div>
+
+                <div class="card shop-item">
+                    <div class="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-desktop text-3xl text-yellow-400"></i>
+                    </div>
+                    <h3 class="font-semibold">OLED 128x64</h3>
+                    <p class="text-gray-400 text-sm mb-2">Écran OLED 0.96" I2C</p>
+                    <p class="price">6,99 €</p>
+                    <button class="btn-primary text-sm py-2 px-4">
+                        <i class="fas fa-shopping-cart"></i> Acheter
+                    </button>
+                </div>
+
+                <div class="card shop-item">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-server text-3xl text-purple-400"></i>
+                    </div>
+                    <h3 class="font-semibold">Breadboard</h3>
+                    <p class="text-gray-400 text-sm mb-2">Platine d'expérimentation 830 points</p>
+                    <p class="price">5,99 €</p>
+                    <button class="btn-primary text-sm py-2 px-4">
+                        <i class="fas fa-shopping-cart"></i> Acheter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="section-title">Contact</h2>
+            <p class="section-subtitle">Une question ? Un projet ? Contactez-nous !</p>
+
+            <div class="grid md:grid-cols-2 gap-12">
+                <div>
+                    <form class="space-y-6" onsubmit="handleSubmit(event)">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Nom</label>
+                            <input type="text" class="form-input" placeholder="Votre nom" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Email</label>
+                            <input type="email" class="form-input" placeholder="votre@email.com" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">Message</label>
+                            <textarea class="form-input" rows="5" placeholder="Votre message..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary w-full justify-center">
+                            <i class="fas fa-paper-plane"></i>
+                            Envoyer
+                        </button>
+                    </form>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="card flex items-center gap-4">
+                        <div class="card-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">GitHub</h3>
+                            <p class="text-gray-400 text-sm">@nanou974</p>
+                        </div>
+                    </div>
+
+                    <div class="card flex items-center gap-4">
+                        <div class="card-icon">
+                            <i class="fab fa-discord"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Discord</h3>
+                            <p class="text-gray-400 text-sm">Rejoignez notre serveur</p>
+                        </div>
+                    </div>
+
+                    <div class="card flex items-center gap-4">
+                        <div class="card-icon">
+                            <i class="fab fa-youtube"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">YouTube</h3>
+                            <p class="text-gray-400 text-sm">Tutoriels en vidéo</p>
+                        </div>
+                    </div>
+
+                    <div class="card flex items-center gap-4">
+                        <div class="card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Email</h3>
+                            <p class="text-gray-400 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="34575b5a405557407451474450415d5a5b1a5246">[email&#160;protected]</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <a href="#home" class="font-orbitron text-2xl font-bold mb-4 block">
+                        <span class="text-cyan-400">ESP</span><span class="text-pink-500">duino</span>
+                    </a>
+                    <p class="text-gray-400 text-sm">
+                        Votre destination pour tous vos projets électroniques, IoT et maker.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-orbitron text-lg mb-4">Navigation</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-cyan-400 transition-colors">Home</a></li>
+                        <li><a href="#tutoriels" class="text-gray-400 hover:text-cyan-400 transition-colors">Tutoriels</a></li>
+                        <li><a href="#projets" class="text-gray-400 hover:text-cyan-400 transition-colors">Projets</a></li>
+                        <li><a href="#shop" class="text-gray-400 hover:text-cyan-400 transition-colors">Boutique</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-cyan-400 transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-orbitron text-lg mb-4">Ressources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors">Bibliothèques</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors">Communauté</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-cyan-400 transition-colors">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-orbitron text-lg mb-4">Suivez-nous</h4>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-500 text-sm">
+                    © 2024 ESPduino. Tous droits réservés.
+                </p>
+                <div class="flex gap-6 text-sm">
+                    <a href="#" class="text-gray-500 hover:text-cyan-400 transition-colors">Mentions légales</a>
+                    <a href="#" class="text-gray-500 hover:text-cyan-400 transition-colors">CGV</a>
+                    <a href="#" class="text-gray-500 hover:text-cyan-400 transition-colors">Confidentialité</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Groq Widget Container -->
+    <div id="groq-widget-container"></div>
+
+    <!-- Scripts -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const hamburger = document.getElementById('hamburger');
+            mobileMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        }
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
             }
-        ]
-    },
-    {
-        day: 2,
-        title: "⚡ Les broches (Pins) Arduino",
-        theory: [
-            "<strong>Les broches</strong> sont les connexions pour communiquer avec le monde extérieur.",
-            "<strong>Broches numériques (0-13) :</strong> Peuvent envoyer HIGH (5V) ou LOW (0V).",
-            "<strong>Broches analogiques (A0-A5) :</strong> Lisent des valeurs entre 0-1023 (capteurs).",
-            "<strong>Broches PWM (~) :</strong> Simulent l'analogique en digital (pinces 3,5,6,9,10,11)."
-        ],
-        example: `const int LED = 13;
-const int BUTTON = 2;
+        });
 
-void setup() {
-  pinMode(LED, OUTPUT);     // Broche 13 = sortie
-  pinMode(BUTTON, INPUT);   // Broche 2 = entrée
-}
+        // Animated Counter
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
 
-void loop() {
-  if (digitalRead(BUTTON) == HIGH) {
-    digitalWrite(LED, HIGH);  // LED ON
-  } else {
-    digitalWrite(LED, LOW);   // LED OFF
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La fonction <code>pinMode()</code> configure une broche en ________ ou INPUT.",
-                answer: "OUTPUT",
-                options: ["OUTPUT", "DIGITAL", "SERIAL", "ANALOG"]
-            },
-            {
-                type: "fill",
-                question: "Les broches analogiques lisent des valeurs entre ________ et 1023.",
-                answer: "0",
-                options: ["0", "5", "255", "100"]
-            },
-            {
-                type: "fill",
-                question: "<code>digitalWrite(13, HIGH)</code> envoie ________ volts à la broche 13.",
-                answer: "5",
-                options: ["5", "3.3", "0", "12"]
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    element.textContent = target + '+';
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+
+        // Intersection Observer for Counters
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = document.querySelectorAll('.stat-number');
+                    counters.forEach(counter => animateCounter(counter));
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-number').forEach(counter => {
+            observer.observe(counter.closest('.text-center'));
+        });
+
+        // Create Floating Particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
             }
-        ]
-    },
-    {
-        day: 3,
-        title: "💡 Les LEDs et la logique binaire",
-        theory: [
-            "Une LED a besoin d'une <strong>résistance</strong> pour ne pas griller (220Ω ou 330Ω).",
-            "<strong>Anode (+)</strong> vers 5V, <strong>Cathode (-)</strong> vers GND = LED allumée.",
-            "HIGH = 5V (allumé), LOW = 0V (éteint).",
-            "Logique binaire : 1 ou 0, allumé ou éteint, aucun entre-deux !"
-        ],
-        example: `const int LED_ROUGE = 3;
-const int LED_VERTE = 5;
-
-void setup() {
-  pinMode(LED_ROUGE, OUTPUT);
-  pinMode(LED_VERTE, OUTPUT);
-}
-
-void loop() {
-  digitalWrite(LED_ROUGE, HIGH);
-  delay(500);
-  digitalWrite(LED_ROUGE, LOW);
-  digitalWrite(LED_VERTE, HIGH);
-  delay(500);
-  digitalWrite(LED_VERTE, LOW);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Une résistance de ________ ohms protège une LED standard.",
-                answer: "220",
-                options: ["220", "100", "1000", "10"]
-            },
-            {
-                type: "fill",
-                question: "L'anode de la LED doit être connectée vers ________.",
-                answer: "5V",
-                options: ["5V", "GND", "A0", "12V"]
-            },
-            {
-                type: "fill",
-                question: "La fonction <code>delay(500)</code> attend ________ milliseconde(s).",
-                answer: "500",
-                options: ["500", "0.5", "5", "50"]
-            }
-        ]
-    },
-    {
-        day: 4,
-        title: "🔘 Les boutons et débouncing",
-        theory: [
-            "Un bouton envoie un signal digital qui peut être <strong>bruyant</strong> (rebond).",
-            "<strong>Débouncing :</strong> Attendre un petit délai pour stabiliser la lecture.",
-            "Deux façons : logicielle (delay) ou matérielle (condensateur).",
-            "État du bouton : HIGH (appuyé) ou LOW (relâché) selon le câblage."
-        ],
-        example: `const int BUTTON = 2;
-const int LED = 13;
-int lastState = LOW;
-unsigned long lastTime = 0;
-const int DEBOUNCE = 20; // 20ms
-
-void setup() {
-  pinMode(BUTTON, INPUT);
-  pinMode(LED, OUTPUT);
-}
-
-void loop() {
-  int currentState = digitalRead(BUTTON);
-  
-  if (currentState != lastState && 
-      millis() - lastTime > DEBOUNCE) {
-    lastState = currentState;
-    lastTime = millis();
-    
-    if (currentState == HIGH) {
-      digitalWrite(LED, HIGH);
-    }
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Le rebond d'un bouton s'appelle ________ en électronique.",
-                answer: "bouncing",
-                options: ["bouncing", "flickering", "glitching", "rippling"]
-            },
-            {
-                type: "fill",
-                question: "Un délai de ________ ms est généralement suffisant pour débouncer.",
-                answer: "20",
-                options: ["20", "1000", "5", "100"]
-            },
-            {
-                type: "fill",
-                question: "La fonction <code>millis()</code> retourne le temps en ________.",
-                answer: "millisecondes",
-                options: ["millisecondes", "secondes", "microsecondes", "nanosecondes"]
-            }
-        ]
-    },
-    {
-        day: 5,
-        title: "📊 Lire des capteurs analogiques",
-        theory: [
-            "Les capteurs analogiques donnent des valeurs <strong>entre 0 et 1023</strong> (résolution 10-bit).",
-            "<strong>analogRead()</strong> lit une valeur d'une broche analogique (A0-A5).",
-            "Exemples : LDR (lumière), thermistor (température), potentiomètre (position).",
-            "Plus la valeur est haute, plus l'intensité du signal est forte."
-        ],
-        example: `const int SENSOR = A0;
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  int valeur = analogRead(SENSOR);
-  
-  Serial.print("Valeur: ");
-  Serial.println(valeur);
-  
-  // Convertir en pourcentage
-  float pourcentage = (valeur / 1023.0) * 100;
-  Serial.print("Pourcentage: ");
-  Serial.print(pourcentage);
-  Serial.println("%");
-  
-  delay(1000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>analogRead()</code> retourne une valeur entre 0 et ________.",
-                answer: "1023",
-                options: ["1023", "255", "512", "4095"]
-            },
-            {
-                type: "fill",
-                question: "Une broche analogique sur Arduino classique a ________ bits de résolution.",
-                answer: "10",
-                options: ["10", "8", "12", "16"]
-            },
-            {
-                type: "fill",
-                question: "Un LDR mesure ________ (lumière / température / humidité).",
-                answer: "la lumière",
-                options: ["la lumière", "la température", "l'humidité", "la pression"]
-            }
-        ]
-    },
-    {
-        day: 6,
-        title: "🔊 PWM - Contrôler l'intensité",
-        theory: [
-            "<strong>PWM (Pulse Width Modulation) :</strong> Simule l'analogique en digital très rapidement.",
-            "Varie la largeur des impulsions pour contrôler la puissance (LED, moteur, etc.).",
-            "<strong>analogWrite(pin, 0-255) :</strong> 0=éteint, 255=plein, 128=50%.",
-            "Seulement sur les broches PWM : 3, 5, 6, 9, 10, 11 (Arduino classique)."
-        ],
-        example: `const int LED_PWM = 3;
-const int POTENTIOMETRE = A0;
-
-void setup() {
-  pinMode(LED_PWM, OUTPUT);
-}
-
-void loop() {
-  int valeur = analogRead(POTENTIOMETRE);
-  
-  // Convertir 0-1023 en 0-255
-  int luminosite = map(valeur, 0, 1023, 0, 255);
-  
-  analogWrite(LED_PWM, luminosite);
-  
-  delay(50);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>analogWrite(pin, 255)</code> correspond à ________ % de puissance.",
-                answer: "100",
-                options: ["100", "50", "255", "128"]
-            },
-            {
-                type: "fill",
-                question: "PWM signifie ________ Width Modulation.",
-                answer: "Pulse",
-                options: ["Pulse", "Power", "Pulse Width", "Programmable"]
-            },
-            {
-                type: "fill",
-                question: "La broche ________ NE supporte PAS le PWM sur Arduino Uno.",
-                answer: "13",
-                options: ["13", "3", "5", "6"]
-            }
-        ]
-    },
-    {
-        day: 7,
-        title: "🗺️ La fonction map() - Convertir des valeurs",
-        theory: [
-            "<strong>map()</strong> convertit une valeur d'une plage à une autre.",
-            "Syntaxe : <code>map(valeur, min1, max1, min2, max2)</code>",
-            "Utile pour adapter des entrées à des sorties différentes.",
-            "Exemple : 0-1023 (analogRead) → 0-255 (analogWrite)."
-        ],
-        example: `const int POTENTIOMETRE = A0;
-const int LED = 3;
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  int valeur_brute = analogRead(POTENTIOMETRE);
-  
-  // Convertir 0-1023 en 0-255
-  int valeur_pwm = map(valeur_brute, 0, 1023, 0, 255);
-  
-  // Convertir 0-1023 en -50 à 50
-  int valeur_signee = map(valeur_brute, 0, 1023, -50, 50);
-  
-  analogWrite(LED, valeur_pwm);
-  
-  Serial.print("Brut: ");
-  Serial.print(valeur_brute);
-  Serial.print(" | PWM: ");
-  Serial.print(valeur_pwm);
-  Serial.print(" | Signé: ");
-  Serial.println(valeur_signee);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La fonction <code>map(512, 0, 1023, 0, 255)</code> retourne approximativement ________.",
-                answer: "128",
-                options: ["128", "255", "256", "512"]
-            },
-            {
-                type: "fill",
-                question: "<code>map()</code> effectue une conversion ________ (proportionnelle / exponentielle).",
-                answer: "proportionnelle",
-                options: ["proportionnelle", "exponentielle", "logarithmique", "aléatoire"]
-            },
-            {
-                type: "fill",
-                question: "<code>map(0, 0, 1023, 0, 255)</code> retourne ________.",
-                answer: "0",
-                options: ["0", "255", "1023", "128"]
-            }
-        ]
-    },
-    {
-        day: 8,
-        title: "📈 Les conditions (if/else)",
-        theory: [
-            "Les conditions permettent de <strong>décider</strong> quoi faire selon une situation.",
-            "<strong>if :</strong> Si la condition est vraie, exécute le code.",
-            "<strong>else if :</strong> Teste une autre condition.",
-            "<strong>else :</strong> Exécute si aucune condition n'était vraie."
-        ],
-        example: `const int CAPTEUR_TEMPERATURE = A0;
-const int LED_FROIDE = 5;
-const int LED_CHAUDE = 6;
-
-void setup() {
-  pinMode(LED_FROIDE, OUTPUT);
-  pinMode(LED_CHAUDE, OUTPUT);
-}
-
-void loop() {
-  int temp = analogRead(CAPTEUR_TEMPERATURE);
-  
-  if (temp < 300) {
-    digitalWrite(LED_FROIDE, HIGH);
-    digitalWrite(LED_CHAUDE, LOW);
-  } 
-  else if (temp > 700) {
-    digitalWrite(LED_FROIDE, LOW);
-    digitalWrite(LED_CHAUDE, HIGH);
-  }
-  else {
-    digitalWrite(LED_FROIDE, LOW);
-    digitalWrite(LED_CHAUDE, LOW);
-  }
-  
-  delay(100);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La condition <code>if (x > 5 && y < 10)</code> est vraie si X > 5 ________ Y < 10.",
-                answer: "ET",
-                options: ["ET", "OU", "XOR", "NOR"]
-            },
-            {
-                type: "fill",
-                question: "L'opérateur <code>==</code> teste l'________.",
-                answer: "égalité",
-                options: ["égalité", "supériorité", "infériorité", "différence"]
-            },
-            {
-                type: "fill",
-                question: "L'opérateur <code>!=</code> signifie ________ égal à.",
-                answer: "pas",
-                options: ["pas", "plus", "moins", "presque"]
-            }
-        ]
-    },
-    {
-        day: 9,
-        title: "🔄 Les boucles (for/while)",
-        theory: [
-            "<strong>Boucles :</strong> Répètent du code plusieurs fois sans réécrire.",
-            "<strong>for :</strong> Répète un nombre <strong>connu</strong> de fois.",
-            "<strong>while :</strong> Répète tant qu'une condition est vraie.",
-            "Évite les boucles infinies accidentelles !"
-        ],
-        example: `void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  // Boucle FOR : 10 fois
-  for (int i = 0; i < 10; i++) {
-    Serial.print("i = ");
-    Serial.println(i);
-  }
-  
-  Serial.println("---");
-  
-  // Boucle WHILE : tant que x < 5
-  int x = 0;
-  while (x < 5) {
-    Serial.print("x = ");
-    Serial.println(x);
-    x++;
-  }
-  
-  delay(2000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La boucle <code>for (int i = 0; i < 5; i++)</code> s'exécute ________ fois.",
-                answer: "5",
-                options: ["5", "4", "6", "infini"]
-            },
-            {
-                type: "fill",
-                question: "<code>i++</code> signifie ________ (augmente i de 1 / diminue i).",
-                answer: "augmente i de 1",
-                options: ["augmente i de 1", "diminue i", "réinitialise i", "multiplie i par 2"]
-            },
-            {
-                type: "fill",
-                question: "Une boucle <code>while(true)</code> sans break crée une boucle ________.",
-                answer: "infinie",
-                options: ["infinie", "courte", "rapide", "nulle"]
-            }
-        ]
-    },
-    {
-        day: 10,
-        title: "💾 Les variables et types de données",
-        theory: [
-            "<strong>Variables :</strong> Conteneurs pour stocker des données.",
-            "<strong>int :</strong> Nombres entiers (-32768 à 32767).",
-            "<strong>float :</strong> Nombres décimaux (plus lents, 4 bytes).",
-            "<strong>bool :</strong> Vrai ou Faux (true/false)."
-        ],
-        example: `const int CAPTEUR = A0;
-const long TEMPS_MAX = 3600000; // 1 heure en ms
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  int temperature = analogRead(CAPTEUR);
-  float celsius = (temperature * 5.0) / 1023.0 * 100;
-  bool trop_chaud = (celsius > 30);
-  long temps_actuel = millis();
-  
-  Serial.print("Temp: ");
-  Serial.print(celsius);
-  Serial.print("°C | Trop chaud: ");
-  Serial.print(trop_chaud);
-  Serial.print(" | Temps: ");
-  Serial.println(temps_actuel);
-  
-  delay(1000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Un <code>int</code> peut stocker des valeurs entre ________ et 32767.",
-                answer: "-32768",
-                options: ["-32768", "-255", "0", "-128"]
-            },
-            {
-                type: "fill",
-                question: "Un <code>float</code> prend ________ bytes en mémoire.",
-                answer: "4",
-                options: ["4", "2", "8", "1"]
-            },
-            {
-                type: "fill",
-                question: "Le type <code>bool</code> peut avoir seulement ________ ou false.",
-                answer: "true",
-                options: ["true", "1", "0", "yes"]
-            }
-        ]
-    },
-    {
-        day: 11,
-        title: "🎯 Les constantes et optimisation mémoire",
-        theory: [
-            "<strong>const :</strong> Variables qui ne changent pas = économise mémoire.",
-            "Arduino a peu de RAM (2KB sur Uno) = optimisation cruciale !",
-            "<strong>#define :</strong> Ancienne façon, remplacée par const.",
-            "Déclarer const au début = bonnes pratiques."
-        ],
-        example: `// Bonnes pratiques
-const int PIN_LED = 13;
-const int PIN_BOUTON = 2;
-const int DELAI_DEBOUNCE = 20;
-const float SEUIL_TENSION = 2.5;
-
-void setup() {
-  pinMode(PIN_LED, OUTPUT);
-  pinMode(PIN_BOUTON, INPUT);
-}
-
-void loop() {
-  if (digitalRead(PIN_BOUTON) == HIGH) {
-    digitalWrite(PIN_LED, HIGH);
-    delay(DELAI_DEBOUNCE);
-  } else {
-    digitalWrite(PIN_LED, LOW);
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Déclarer une variable <code>const</code> ________ la mémoire utilisée.",
-                answer: "économise",
-                options: ["économise", "augmente", "double", "ne change pas"]
-            },
-            {
-                type: "fill",
-                question: "Arduino Uno dispose d'environ ________ KB de RAM.",
-                answer: "2",
-                options: ["2", "4", "8", "16"]
-            },
-            {
-                type: "fill",
-                question: "Les <code>const</code> doivent être déclarées ________ du setup().",
-                answer: "avant",
-                options: ["avant", "après", "dans", "jamais"]
-            }
-        ]
-    },
-    {
-        day: 12,
-        title: "🔧 Les fonctions (functions) personnalisées",
-        theory: [
-            "<strong>Fonctions :</strong> Bloc de code réutilisable pour éviter les répétitions.",
-            "Syntaxe : <code>typeRetour nomFonction(parametres) { ... }</code>",
-            "<strong>void :</strong> Fonction qui ne retourne rien.",
-            "<strong>return :</strong> Envoie une valeur au code qui a appelé la fonction."
-        ],
-        example: `const int LED1 = 3;
-const int LED2 = 5;
-const int LED3 = 6;
-
-// Fonction qui allume une LED avec intensité
-void allumerLED(int pin, int intensite) {
-  analogWrite(pin, intensite);
-}
-
-// Fonction qui retourne une valeur
-int obtenirTemperature() {
-  int valeur = analogRead(A0);
-  return valeur;
-}
-
-void setup() {
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(LED3, OUTPUT);
-}
-
-void loop() {
-  allumerLED(LED1, 100);
-  allumerLED(LED2, 150);
-  
-  int temp = obtenirTemperature();
-  allumerLED(LED3, temp / 4);
-  
-  delay(500);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Une fonction <code>void</code> ________ une valeur.",
-                answer: "ne retourne pas",
-                options: ["ne retourne pas", "retourne toujours", "retourne 0", "retourne true"]
-            },
-            {
-                type: "fill",
-                question: "Le mot-clé <code>return</code> ________ une valeur à l'appelant.",
-                answer: "envoie",
-                options: ["envoie", "stocke", "crée", "supprime"]
-            },
-            {
-                type: "fill",
-                question: "Une fonction doit être déclarée ________ de l'utiliser.",
-                answer: "avant",
-                options: ["avant", "après", "pendant", "jamais"]
-            }
-        ]
-    },
-    {
-        day: 13,
-        title: "📡 La communication série (Serial)",
-        theory: [
-            "<strong>Serial :</strong> Communiquer avec l'ordinateur via USB.",
-            "<code>Serial.begin(9600)</code> : Initialise à 9600 baud.",
-            "<code>Serial.println()</code> : Affiche avec retour à la ligne.",
-            "<code>Serial.print()</code> : Affiche sans retour."
-        ],
-        example: `const int CAPTEUR = A0;
-
-void setup() {
-  Serial.begin(9600);
-  Serial.println("=== Démarrage du programme ===");
-}
-
-void loop() {
-  int valeur = analogRead(CAPTEUR);
-  float tension = (valeur / 1023.0) * 5.0;
-  
-  Serial.print("Valeur: ");
-  Serial.print(valeur);
-  Serial.print(" | Tension: ");
-  Serial.print(tension);
-  Serial.println(" V");
-  
-  delay(1000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>Serial.begin(9600)</code> initialise la vitesse en ________.",
-                answer: "baud",
-                options: ["baud", "Hz", "kHz", "MHz"]
-            },
-            {
-                type: "fill",
-                question: "<code>Serial.println()</code> ajoute un ________ automatiquement.",
-                answer: "retour à la ligne",
-                options: ["retour à la ligne", "espace", "zéro", "point"]
-            },
-            {
-                type: "fill",
-                question: "La vitesse série standard sur Arduino est ________.",
-                answer: "9600",
-                options: ["9600", "115200", "1200", "19200"]
-            }
-        ]
-    },
-    {
-        day: 14,
-        title: "🆔 Les types de données avancés",
-        theory: [
-            "<strong>byte :</strong> 0-255 (1 octet = 8 bits).",
-            "<strong>long :</strong> Très grands nombres (32 bits).",
-            "<strong>unsigned :</strong> Seulement positifs (double la plage max).",
-            "<strong>String :</strong> Texte (utile mais gourmand en mémoire)."
-        ],
-        example: `byte valeur_simple = 255;
-unsigned int grand_nombre = 65535;
-long temps_total = 3600000;
-String message = "Arduino";
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  valeur_simple++;
-  
-  Serial.print("Byte: ");
-  Serial.print(valeur_simple);
-  Serial.print(" | Message: ");
-  Serial.print(message);
-  Serial.print(" | Temps: ");
-  Serial.println(temps_total);
-  
-  delay(1000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Un <code>byte</code> peut stocker 0 à ________.",
-                answer: "255",
-                options: ["255", "127", "1023", "32767"]
-            },
-            {
-                type: "fill",
-                question: "<code>unsigned int</code> peut aller jusqu'à ________ (sans négatifs).",
-                answer: "65535",
-                options: ["65535", "32767", "16384", "4095"]
-            },
-            {
-                type: "fill",
-                question: "Le type <code>String</code> prend ________ mémoire qu'un tableau.",
-                answer: "plus de",
-                options: ["plus de", "moins de", "autant de", "pas de"]
-            }
-        ]
-    },
-    {
-        day: 15,
-        title: "📚 Les tableaux (Arrays)",
-        theory: [
-            "<strong>Tableau :</strong> Liste de valeurs du même type.",
-            "Syntaxe : <code>type nom[taille] = {val1, val2, ...}</code>",
-            "<strong>Index :</strong> Commence à 0 (pas à 1!).",
-            "Utile pour stocker plusieurs capteurs ou LEDs."
-        ],
-        example: `const int BROCHES_LEDS[] = {3, 5, 6, 9};
-const int NB_LEDS = 4;
-
-void setup() {
-  for (int i = 0; i < NB_LEDS; i++) {
-    pinMode(BROCHES_LEDS[i], OUTPUT);
-  }
-}
-
-void loop() {
-  // Allumer une par une
-  for (int i = 0; i < NB_LEDS; i++) {
-    digitalWrite(BROCHES_LEDS[i], HIGH);
-    delay(200);
-    digitalWrite(BROCHES_LEDS[i], LOW);
-  }
-  
-  delay(500);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Dans un tableau <code>int tab[5]</code>, le premier élément est <code>tab[________]</code>.",
-                answer: "0",
-                options: ["0", "1", "5", "-1"]
-            },
-            {
-                type: "fill",
-                question: "Un tableau <code>int tab[10]</code> peut contenir ________ éléments.",
-                answer: "10",
-                options: ["10", "11", "9", "100"]
-            },
-            {
-                type: "fill",
-                question: "Pour accéder au 3ème élément du tableau, on utilise <code>tab[________]</code>.",
-                answer: "2",
-                options: ["2", "3", "1", "0"]
-            }
-        ]
-    },
-    {
-        day: 16,
-        title: "🎚️ Le potentiomètre - Contrôle manuel",
-        theory: [
-            "Le potentiomètre est un <strong>capteur variable</strong> qui mesure la position (rotation).",
-            "Retourne une valeur entre 0-1023 via analogRead().",
-            "Parfait pour contrôler : luminosité, volume, vitesse, etc.",
-            "Connections : GND - Patte centrale (vers A0) - 5V."
-        ],
-        example: `const int POTENTIOMETRE = A0;
-const int LED_PWM = 3;
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(LED_PWM, OUTPUT);
-}
-
-void loop() {
-  int valeur_pot = analogRead(POTENTIOMETRE);
-  
-  // Convertir 0-1023 en 0-255 pour PWM
-  int luminosite = map(valeur_pot, 0, 1023, 0, 255);
-  
-  analogWrite(LED_PWM, luminosite);
-  
-  Serial.print("Potentiomètre: ");
-  Serial.print(valeur_pot);
-  Serial.print(" | Luminosité: ");
-  Serial.println(luminosite);
-  
-  delay(100);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Un potentiomètre retourne une valeur entre ________ et 1023.",
-                answer: "0",
-                options: ["0", "1", "100", "255"]
-            },
-            {
-                type: "fill",
-                question: "La patte centrale du potentiomètre doit être connectée à ________.",
-                answer: "A0 (ou autre broche analogique)",
-                options: ["A0 (ou autre broche analogique)", "5V", "GND", "D13"]
-            },
-            {
-                type: "fill",
-                question: "Un potentiomètre 10kΩ signifie ________ ohms.",
-                answer: "10000",
-                options: ["10000", "100", "1000", "100000"]
-            }
-        ]
-    },
-    {
-        day: 17,
-        title: "🌞 Le capteur LDR (Lumière)",
-        theory: [
-            "<strong>LDR (Light Dependent Resistor) :</strong> Capteur qui change de résistance selon la lumière.",
-            "Plus clair = résistance basse = valeur analogRead() haute.",
-            "Plus sombre = résistance haute = valeur analogRead() basse.",
-            "Circuit diviseur de tension avec une résistance fixe (10kΩ)."
-        ],
-        example: `const int LDR = A0;
-const int LED = 13;
-const int SEUIL = 500;
-
-void setup() {
-  Serial.begin(9600);
-  pinMode(LED, OUTPUT);
-}
-
-void loop() {
-  int lumiere = analogRead(LDR);
-  
-  if (lumiere > SEUIL) {
-    // Clair : LED éteinte
-    digitalWrite(LED, LOW);
-    Serial.println("C'est clair");
-  } else {
-    // Sombre : LED allumée
-    digitalWrite(LED, HIGH);
-    Serial.println("C'est sombre");
-  }
-  
-  Serial.print("LDR: ");
-  Serial.println(lumiere);
-  
-  delay(500);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Quand c'est clair, la LDR retourne une valeur ________ (haute / basse).",
-                answer: "haute",
-                options: ["haute", "basse", "moyenne", "zéro"]
-            },
-            {
-                type: "fill",
-                question: "LDR signifie ________ Dependent Resistor.",
-                answer: "Light",
-                options: ["Light", "Linear", "Large", "Low"]
-            },
-            {
-                type: "fill",
-                question: "La résistance série pour une LDR est généralement ________Ω.",
-                answer: "10k",
-                options: ["10k", "1k", "100k", "220"]
-            }
-        ]
-    },
-    {
-        day: 18,
-        title: "🌡️ Capteur de température (TMP36)",
-        theory: [
-            "<strong>TMP36 :</strong> Capteur de température analogique (+5V).",
-            "Formule : Temp(°C) = (Voltage - 0.5) * 100.",
-            "Plus facile qu'une thermistor, plus précis qu'une LDR.",
-            "Sortie linéaire : 10mV par degré."
-        ],
-        example: `const int CAPTEUR_TEMP = A0;
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  int valeur_brute = analogRead(CAPTEUR_TEMP);
-  
-  // Convertir en tension (0-5V)
-  float tension = (valeur_brute / 1023.0) * 5.0;
-  
-  // Convertir en température (formule TMP36)
-  float temperature = (tension - 0.5) * 100;
-  
-  Serial.print("Température: ");
-  Serial.print(temperature);
-  Serial.println("°C");
-  
-  delay(1000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "TMP36 produit ________ mV par degré Celsius.",
-                answer: "10",
-                options: ["10", "1", "100", "5"]
-            },
-            {
-                type: "fill",
-                question: "La formule TMP36 est : (Voltage - ________) * 100.",
-                answer: "0.5",
-                options: ["0.5", "0.1", "1", "0.05"]
-            },
-            {
-                type: "fill",
-                question: "TMP36 doit être alimenté avec ________ volts.",
-                answer: "5",
-                options: ["5", "3.3", "12", "9"]
-            }
-        ]
-    },
-    {
-        day: 19,
-        title: "🎵 Générer des sons (Buzzer/Piezzo)",
-        theory: [
-            "<strong>Buzzer :</strong> Petit haut-parleur piezoélectrique pour créer du bruit.",
-            "Nécessite une broche PWM pour varier la fréquence.",
-            "Fréquences : 20Hz-20kHz (audible humain).",
-            "<strong>tone() :</strong> Fonction Arduino pour générer des sons facilement."
-        ],
-        example: `const int BUZZER = 3;
-const int BOUTON = 2;
-
-void setup() {
-  pinMode(BUZZER, OUTPUT);
-  pinMode(BOUTON, INPUT);
-}
-
-void loop() {
-  if (digitalRead(BOUTON) == HIGH) {
-    // Beep simple
-    tone(BUZZER, 1000, 200); // Fréquence 1000Hz, 200ms
-    delay(200);
-  } else {
-    noTone(BUZZER); // Arrêter le son
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>tone(pin, 1000)</code> génère un son à ________ Hz.",
-                answer: "1000",
-                options: ["1000", "100", "10000", "500"]
-            },
-            {
-                type: "fill",
-                question: "La fonction <code>noTone(pin)</code> ________ le son.",
-                answer: "arrête",
-                options: ["arrête", "démarre", "amplifie", "change"]
-            },
-            {
-                type: "fill",
-                question: "L'homme entend entre ________ et 20000 Hz.",
-                answer: "20",
-                options: ["20", "1", "100", "5000"]
-            }
-        ]
-    },
-    {
-        day: 20,
-        title: "🔀 Le multiplexage - Plusieurs LEDs",
-        theory: [
-            "<strong>Multiplexage :</strong> Contrôler plusieurs LEDs avec peu de broches.",
-            "Allume une LED à la fois très rapidement pour donner l'impression qu'elles brillent toutes.",
-            "Utile pour matrices LED ou 7-segment.",
-            "Économise les I/O et la mémoire."
-        ],
-        example: `const int LEDS[] = {3, 5, 6, 9, 10};
-const int NB_LEDS = 5;
-
-void setup() {
-  for (int i = 0; i < NB_LEDS; i++) {
-    pinMode(LEDS[i], OUTPUT);
-  }
-}
-
-void loop() {
-  // Affichage multiplexé
-  for (int i = 0; i < NB_LEDS; i++) {
-    // Allumer la LED i
-    analogWrite(LEDS[i], 255);
-    delay(50);
-    
-    // Éteindre la LED i
-    analogWrite(LEDS[i], 0);
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "Le multiplexage permet de contrôler plusieurs LEDs avec ________ broches.",
-                answer: "peu de",
-                options: ["peu de", "beaucoup de", "une seule", "pas de"]
-            },
-            {
-                type: "fill",
-                question: "Avec multiplexage, on allume les LEDs ________ (toutes ensemble / une à la fois).",
-                answer: "une à la fois",
-                options: ["une à la fois", "toutes ensemble", "aléatoirement", "lentement"]
-            },
-            {
-                type: "fill",
-                question: "Pour que le multiplexage marche, il faut que le délai soit ________ (court / long).",
-                answer: "court",
-                options: ["court", "long", "aléatoire", "absent"]
-            }
-        ]
-    },
-    {
-        day: 21,
-        title: "📡 L'ESP32 - Microcontrôleur avec WiFi",
-        theory: [
-            "<strong>ESP32 :</strong> Version puissante d'Arduino avec WiFi + Bluetooth.",
-            "Beaucoup plus de broches (38 vs 14 sur Uno).",
-            "RAM : 520KB (vs 2KB Arduino).",
-            "Vitesse : 240MHz (vs 16MHz Arduino).",
-            "Prix : Similaire à Arduino mais bien plus puissant."
-        ],
-        example: `#include <WiFi.h>
-
-const char* ssid = "MonWiFi";
-const char* password = "MonMotDePasse";
-const int LED = 2;
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED, OUTPUT);
-  
-  WiFi.begin(ssid, password);
-  
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-    delay(500);
-    Serial.print(".");
-    attempts++;
-  }
-  
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("WiFi connecté!");
-    digitalWrite(LED, HIGH);
-  }
-}
-
-void loop() {
-  Serial.print("Adresse IP: ");
-  Serial.println(WiFi.localIP());
-  delay(5000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "L'ESP32 a ________ fois plus de RAM que Arduino Uno.",
-                answer: "260",
-                options: ["260", "10", "100", "50"]
-            },
-            {
-                type: "fill",
-                question: "L'ESP32 fonctionne à ________ MHz.",
-                answer: "240",
-                options: ["240", "16", "100", "80"]
-            },
-            {
-                type: "fill",
-                question: "La vitesse série par défaut sur ESP32 est ________.",
-                answer: "115200",
-                options: ["115200", "9600", "57600", "230400"]
-            }
-        ]
-    },
-    {
-        day: 22,
-        title: "🌐 WiFi sur ESP32 - Connexion simple",
-        theory: [
-            "ESP32 se connecte au WiFi avec <strong>WiFi.begin(ssid, password)</strong>.",
-            "Vérifier la connexion avec <strong>WiFi.status() == WL_CONNECTED</strong>.",
-            "Obtenir l'IP avec <strong>WiFi.localIP()</strong>.",
-            "Parfait pour IoT et projets connectés."
-        ],
-        example: `#include <WiFi.h>
-
-const char* ssid = "MaBox";
-const char* password = "MotDePasse123";
-
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  
-  Serial.println("\\n\\nDémarrage WiFi...");
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  
-  int counter = 0;
-  while (WiFi.status() != WL_CONNECTED && counter < 20) {
-    delay(500);
-    Serial.print(".");
-    counter++;
-  }
-  
-  Serial.println("");
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("WiFi connecté! IP: ");
-    Serial.println(WiFi.localIP());
-  } else {
-    Serial.println("Echec connexion WiFi");
-  }
-}
-
-void loop() {
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("Toujours connecté");
-  }
-  delay(5000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>WiFi.begin(ssid, password)</code> lance la connexion au ________.",
-                answer: "WiFi",
-                options: ["WiFi", "Bluetooth", "4G", "Ethernet"]
-            },
-            {
-                type: "fill",
-                question: "Pour vérifier si connecté, on utilise <code>WiFi.status() == ________</code>.",
-                answer: "WL_CONNECTED",
-                options: ["WL_CONNECTED", "CONNECTED", "TRUE", "1"]
-            },
-            {
-                type: "fill",
-                question: "<code>WiFi.localIP()</code> retourne ________ de l'ESP32.",
-                answer: "l'adresse IP",
-                options: ["l'adresse IP", "le SSID", "le signal", "la vitesse"]
-            }
-        ]
-    },
-    {
-        day: 23,
-        title: "🌐 Créer un serveur web sur ESP32",
-        theory: [
-            "<strong>Serveur web :</strong> L'ESP32 devient un vrai serveur accessible via navigateur.",
-            "Utilise <strong>ESP8266WebServer</strong> (compatible ESP32).",
-            "Accès via http://192.168.x.x (adresse IP de l'ESP32).",
-            "Parfait pour contrôler des LEDs depuis le téléphone."
-        ],
-        example: `#include <WiFi.h>
-#include <WebServer.h>
-
-const char* ssid = "MaBox";
-const char* password = "MotDePasse123";
-const int LED = 2;
-
-WebServer server(80);
-
-void handleRoot() {
-  String html = "<html><body>";
-  html += "<h1>Contrôle LED ESP32</h1>";
-  html += "<a href='/led/on'>Allumer LED</a><br>";
-  html += "<a href='/led/off'>Éteindre LED</a>";
-  html += "</body></html>";
-  server.send(200, "text/html", html);
-}
-
-void handleLEDOn() {
-  digitalWrite(LED, HIGH);
-  server.send(200, "text/html", "<h1>LED Allumée</h1><a href='/'>Retour</a>");
-}
-
-void handleLEDOff() {
-  digitalWrite(LED, LOW);
-  server.send(200, "text/html", "<h1>LED Éteinte</h1><a href='/'>Retour</a>");
-}
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED, OUTPUT);
-  
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  Serial.println("WiFi connecté!");
-  Serial.println(WiFi.localIP());
-  
-  server.on("/", handleRoot);
-  server.on("/led/on", handleLEDOn);
-  server.on("/led/off", handleLEDOff);
-  
-  server.begin();
-}
-
-void loop() {
-  server.handleClient();
-  delay(1);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La classe <code>WebServer</code> est du port ________.",
-                answer: "80",
-                options: ["80", "8080", "443", "3000"]
-            },
-            {
-                type: "fill",
-                question: "<code>server.on(\"/path\", function)</code> crée une ________ web.",
-                answer: "route",
-                options: ["route", "LED", "liaison", "boucle"]
-            },
-            {
-                type: "fill",
-                question: "La méthode <code>server.handleClient()</code> doit être appelée dans ________.",
-                answer: "loop()",
-                options: ["loop()", "setup()", "main()", "init()"]
-            }
-        ]
-    },
-    {
-        day: 24,
-        title: "📊 API REST - Contrôle en JSON",
-        theory: [
-            "<strong>REST API :</strong> Interface pour contrôler l'ESP32 via HTTP.",
-            "<strong>JSON :</strong> Format léger pour envoyer/recevoir des données.",
-            "Exemple : GET /api/led?state=on → Réponse JSON avec statut.",
-            "Permet contrôle depuis n'importe quel client (téléphone, web, autre Arduino)."
-        ],
-        example: `#include <WiFi.h>
-#include <WebServer.h>
-#include <ArduinoJson.h>
-
-const char* ssid = "MaBox";
-const char* password = "MotDePasse123";
-const int LED = 2;
-
-WebServer server(80);
-
-void handleLEDControl() {
-  String state = server.arg("state");
-  
-  DynamicJsonDocument doc(200);
-  
-  if (state == "on") {
-    digitalWrite(LED, HIGH);
-    doc["status"] = "ON";
-    doc["message"] = "LED allumée";
-  } else if (state == "off") {
-    digitalWrite(LED, LOW);
-    doc["status"] = "OFF";
-    doc["message"] = "LED éteinte";
-  } else {
-    doc["status"] = "ERROR";
-    doc["message"] = "Paramètre invalide";
-  }
-  
-  String response;
-  serializeJson(doc, response);
-  server.send(200, "application/json", response);
-}
-
-void handleStatus() {
-  DynamicJsonDocument doc(200);
-  doc["led_state"] = digitalRead(LED);
-  doc["ip"] = WiFi.localIP().toString();
-  
-  String response;
-  serializeJson(doc, response);
-  server.send(200, "application/json", response);
-}
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED, OUTPUT);
-  
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-  
-  Serial.println(WiFi.localIP());
-  
-  server.on("/api/led", handleLEDControl);
-  server.on("/api/status", handleStatus);
-  server.begin();
-}
-
-void loop() {
-  server.handleClient();
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "REST signifie Representational ________ Transfer.",
-                answer: "State",
-                options: ["State", "System", "Serial", "Server"]
-            },
-            {
-                type: "fill",
-                question: "JSON est un format ________ pour les données.",
-                answer: "léger",
-                options: ["léger", "binaire", "compressé", "chiffré"]
-            },
-            {
-                type: "fill",
-                question: "<code>server.arg(\"state\")</code> récupère le paramètre ________ de l'URL.",
-                answer: "state",
-                options: ["state", "port", "ip", "ssid"]
-            }
-        ]
-    },
-    {
-        day: 25,
-        title: "💾 Stocker des données - EEPROM",
-        theory: [
-            "<strong>EEPROM :</strong> Mémoire qui persiste après l'extinction.",
-            "Arduino : 1KB, ESP32 : utilisent NVS (Non-Volatile Storage).",
-            "Utile pour : paramètres, logs, configurations.",
-            "ATTENTION : Limite d'écritures (100k cycles environ)."
-        ],
-        example: `#include <EEPROM.h>
-
-const int ADDR_COMPTEUR = 0;
-const int ADDR_SSID = 10;
-
-void setup() {
-  Serial.begin(115200);
-  EEPROM.begin(512);
-  
-  // Lire le compteur
-  int compteur = EEPROM.read(ADDR_COMPTEUR);
-  Serial.print("Compteur: ");
-  Serial.println(compteur);
-  
-  // Incrémenter et sauver
-  compteur++;
-  EEPROM.write(ADDR_COMPTEUR, compteur);
-  EEPROM.commit();
-  
-  Serial.print("Nouveau compteur: ");
-  Serial.println(compteur);
-}
-
-void loop() {
-  delay(10000);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "L'EEPROM est une mémoire ________ (persiste après extinction).",
-                answer: "persistante",
-                options: ["persistante", "volatile", "temporaire", "rapide"]
-            },
-            {
-                type: "fill",
-                question: "Arduino Uno a ________ KB d'EEPROM.",
-                answer: "1",
-                options: ["1", "2", "4", "8"]
-            },
-            {
-                type: "fill",
-                question: "L'EEPROM peut être écrite environ ________ fois.",
-                answer: "100000",
-                options: ["100000", "1000", "1000000", "10000"]
-            }
-        ]
-    },
-    {
-        day: 26,
-        title: "⏰ Timers et interruptions - Timing précis",
-        theory: [
-            "<strong>millis() :</strong> Retourne le temps en millisecondes depuis le démarrage.",
-            "<strong>micros() :</strong> Même chose mais en microsecondes (plus précis).",
-            "<strong>interruptions :</strong> Exécute une fonction à un moment exact.",
-            "Utile pour : mesures précises, tâches parallèles, événements."
-        ],
-        example: `const int LED1 = 3;
-const int LED2 = 5;
-unsigned long dernierTemps1 = 0;
-unsigned long dernierTemps2 = 0;
-const unsigned long DELAI1 = 500;
-const unsigned long DELAI2 = 1000;
-
-void setup() {
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-}
-
-void loop() {
-  unsigned long maintenant = millis();
-  
-  // Clignoter LED1 tous les 500ms
-  if (maintenant - dernierTemps1 >= DELAI1) {
-    dernierTemps1 = maintenant;
-    digitalWrite(LED1, !digitalRead(LED1));
-  }
-  
-  // Clignoter LED2 tous les 1000ms
-  if (maintenant - dernierTemps2 >= DELAI2) {
-    dernierTemps2 = maintenant;
-    digitalWrite(LED2, !digitalRead(LED2));
-  }
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "<code>millis()</code> retourne le temps en ________.",
-                answer: "millisecondes",
-                options: ["millisecondes", "secondes", "microsecondes", "nanosecondes"]
-            },
-            {
-                type: "fill",
-                question: "<code>micros()</code> est ________ fois plus précis que millis().",
-                answer: "1000",
-                options: ["1000", "10", "100", "1000000"]
-            },
-            {
-                type: "fill",
-                question: "millis() retourne un ________ (overflow après ~50 jours).",
-                answer: "unsigned long",
-                options: ["unsigned long", "int", "byte", "long"]
-            }
-        ]
-    },
-    {
-        day: 27,
-        title: "🔌 Puissance et courant - Lois d'Ohm",
-        theory: [
-            "<strong>Loi d'Ohm :</strong> V = I × R (Tension = Courant × Résistance).",
-            "<strong>Puissance :</strong> P = V × I (Watts).",
-            "Arduino 5V peut fournir 200mA max sur une broche.",
-            "<strong>Danger :</strong> Trop de courant = composant grillé !"
-        ],
-        example: `// Calculs pratiques
-// Arduino 5V, LED 20mA, résistance ?
-// V = I × R → 5 = 0.020 × R → R = 250Ω (utiliser 220Ω)
-
-// Moteur 100mA → besoin relais/transistor (Arduino ne peut pas)
-// Chauffage 2A → besoin MOSFET + alimentation externe
-
-const int RELAY_PIN = 2;
-const int CURRENT_SENSOR = A0;
-
-void setup() {
-  pinMode(RELAY_PIN, OUTPUT);
-  Serial.begin(9600);
-}
-
-void loop() {
-  int valeur_courant = analogRead(CURRENT_SENSOR);
-  float courant = (valeur_courant / 1023.0) * 5.0 * 1000; // mA
-  
-  Serial.print("Courant: ");
-  Serial.print(courant);
-  Serial.println(" mA");
-  
-  if (courant > 200) {
-    digitalWrite(RELAY_PIN, LOW); // Couper
-  }
-  
-  delay(100);
-}`,
-        tests: [
-            {
-                type: "fill",
-                question: "La Loi d'Ohm est : V = I × ________.",
-                answer: "R",
-                options: ["R", "P", "W", "C"]
-            },
-            {
-                type: "fill",
-                question: "Arduino 5V peut fournir ________ mA maximum.",
-                answer: "200",
-                options: ["200", "1000", "500",
+        }
+        createParticles();
+
+        // Form Handler
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('Merci pour votre message ! Nous vous répondrons bientôt.');
+            event.target.reset();
+        }
+
+        // Smooth Scroll for Navigation Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <!-- Groq Widget Script -->
+    <script>
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://espduino-2paa204n9-bg-3d81.vercel.app/groq-widget.js';
+            script.async = true;
+            script.onload = function() {
+                if (typeof initGroqWidget === 'function') {
+                    initGroqWidget('https://espduino-2paa204n9-bg-3d81.vercel.app');
+                }
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
