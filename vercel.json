@@ -1,0 +1,13 @@
+{
+  "buildCommand": "echo 'Static site'",
+  "outputDirectory": "public",
+  "env": {
+    "GROQ_API_KEY": "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"
+  },
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}
